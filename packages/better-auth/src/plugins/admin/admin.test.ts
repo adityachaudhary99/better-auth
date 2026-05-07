@@ -1176,6 +1176,20 @@ describe("Admin plugin", async () => {
 		await client.admin.removeUser({ userId }, { headers: adminHeaders });
 	});
 
+	it("should return USER_NOT_FOUND when setting password for a non-existent user", async () => {
+		const res = await client.admin.setUserPassword(
+			{
+				userId: "non-existent-user-id",
+				newPassword: "newPassword",
+			},
+			{
+				headers: adminHeaders,
+			},
+		);
+		expect(res.error?.status).toBe(404);
+		expect(res.error?.code).toBe("USER_NOT_FOUND");
+	});
+
 	it("should allow admin to delete user", async () => {
 		const res = await client.admin.removeUser(
 			{

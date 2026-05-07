@@ -1550,6 +1550,10 @@ export const setUserPassword = (opts: AdminOptions) =>
 				ctx.context.logger.error("Password is too long");
 				throw APIError.from("BAD_REQUEST", BASE_ERROR_CODES.PASSWORD_TOO_LONG);
 			}
+			const user = await ctx.context.internalAdapter.findUserById(userId);
+			if (!user) {
+				throw APIError.from("NOT_FOUND", BASE_ERROR_CODES.USER_NOT_FOUND);
+			}
 			const hashedPassword = await ctx.context.password.hash(newPassword);
 			const accounts = await ctx.context.internalAdapter.findAccounts(userId);
 			const credentialAccount = accounts.find(
