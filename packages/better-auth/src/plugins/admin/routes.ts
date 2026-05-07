@@ -1551,7 +1551,23 @@ export const setUserPassword = (opts: AdminOptions) =>
 				throw APIError.from("BAD_REQUEST", BASE_ERROR_CODES.PASSWORD_TOO_LONG);
 			}
 			const hashedPassword = await ctx.context.password.hash(newPassword);
-			await ctx.context.internalAdapter.updatePassword(userId, hashedPassword);
+			const accounts = await ctx.context.internalAdapter.findAccounts(userId);
+			const credentialAccount = accounts.find(
+				(account) => account.providerId === "credential",
+			);
+			if (credentialAccount) {
+				await ctx.context.internalAdapter.updatePassword(
+					userId,
+					hashedPassword,
+				);
+			} else {
+				await ctx.context.internalAdapter.createAccount({
+					userId,
+					providerId: "credential",
+					accountId: userId,
+					password: hashedPassword,
+				});
+			}
 			return ctx.json({
 				status: true,
 			});
